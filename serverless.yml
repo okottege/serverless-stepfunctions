@@ -1,0 +1,24 @@
+service: policy-creator
+
+provider:
+  name: aws
+  runtime: dotnetcore3.1
+  stage: dev
+  region: us-west-2
+  timeout: 30
+  memorySize: 1024
+  package:
+    artifact: dist/policy-creator.zip
+
+functions:
+  UnderwriteHandler:
+    handler: PolicyCreator.Functions::PolicyCreator.Functions.FunctionHandlers.InvokeUnderwriteHandler::Handle
+
+  CreatePolicyHandler:
+    handler: PolicyCreator.Functions::PolicyCreator.Functions.FunctionHandlers.CreatePolicyHandler::Handle
+
+  WritePolicyToDataStoreHandler:
+    handler: PolicyCreator.Functions::PolicyCreator.Functions.FunctionHandlers.WritePolicyRecordToDataStoreHandler::Handle
+
+plugins:
+  - serverless-step-functions
