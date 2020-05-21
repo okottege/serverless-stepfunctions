@@ -7,8 +7,9 @@ provider:
   region: us-west-2
   timeout: 30
   memorySize: 1024
-  package:
-    artifact: dist/policy-creator.zip
+
+package:
+  artifact: dist/policy-creator.zip
 
 functions:
   UnderwriteHandler:
@@ -20,5 +21,25 @@ functions:
   WritePolicyToDataStoreHandler:
     handler: PolicyCreator.Functions::PolicyCreator.Functions.FunctionHandlers.WritePolicyRecordToDataStoreHandler::Handle
 
+stepFunctions:
+  stateMachines:
+    PolicyCreationProcess:
+      definition:
+        Comment: "The policy creation flow"
+        StartAt: DoUnderwriting
+        States:
+          DoUnderwriting:
+            Type: Task
+            Resource: "arn:aws:lambda:${opt:region, self:provider.region}:#{AWS::AccountId}:function:${self:service}-${opt:stage}-UnderwriteHandler"
+            Next: "CreatePolicy"
+          CreatePolicy:
+            Type: Task
+            Resource: "arn:aws:lambda:${opt:region, self:provider.region}:#{AWS::AccountId}:function:${self:service}-${opt:stage}-CreatePolicyHandler"
+            Next: "WritePolicyToDataStore"
+          WritePolicyToDataStore:
+            Type: Task
+            Resource: "arn:aws:lambda:${opt:region, self:provider.region}:#{AWS::AccountId}:function:${self:service}-${opt:stage}-WritePolicyToDataStoreHandler"  
+            End: true
 plugins:
   - serverless-step-functions
+  - serverless-pseudo-parameters
