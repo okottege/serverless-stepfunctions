@@ -7,6 +7,22 @@ provider:
   region: us-west-2
   timeout: 30
   memorySize: 1024
+  iamRoleStatements:
+    - Effect: Allow
+      Action:
+        - dynamodb:DescribeTable
+        - dynamodb:Query
+        - dynamodb:Scan
+        - dynamodb:PutItem
+      Resource: "arn:aws:dynamodb:${opt:region, self:provider.region}:*:table/${self:provider.environment.POLICY_TABLE_NAME}"
+    
+    - Effect: Allow
+      Action:
+        - states:StartExecution
+      Resource: ${self:resources.Outputs.PolicyCreationStateMachine.Value}
+  environment:
+    POLICY_TABLE_NAME: ${self:service}-${opt:stage, self:provider.stage}
+    STEP_FUNCTION_ARN: ${self:resources.Outputs.PolicyCreationStateMachine.Value}
 
 package:
   artifact: dist/policy-creator.zip
@@ -21,9 +37,43 @@ functions:
   WritePolicyToDataStoreHandler:
     handler: PolicyCreator.Functions::PolicyCreator.Functions.FunctionHandlers.WritePolicyRecordToDataStoreHandler::Handle
 
+  StartPolicyCreationHandler:
+    handler: PolicyCreator.Functions::PolicyCreator.Functions.FunctionHandlers.StartPolicyCreationHandler::Handle
+    description: The endpoint that starts the policy creation process
+    events:
+      - http:
+          path: /create-policy/{quoteId}
+          method: post
+          cors: 
+            origin: '*'
+
+resources:
+  Resources:
+    policyTable:
+      Type: AWS::DynamoDB::Table
+      DeletionPolicy: Retain
+      Properties:
+        TableName: ${self:provider.environment.POLICY_TABLE_NAME}
+        AttributeDefinitions:
+          - AttributeName: PolicyNumber
+            AttributeType: S
+        KeySchema:
+          - AttributeName: PolicyNumber
+            KeyType: HASH
+        ProvisionedThroughput:
+          ReadCapacityUnits: 1
+          WriteCapacityUnits: 1
+
+  Outputs:
+    PolicyCreationStateMachine:
+      Description: The ARN of the policy creation step function
+      Value: 
+        Ref: PolicyCreationStateMachine
+
 stepFunctions:
   stateMachines:
     PolicyCreationProcess:
+      name: PolicyCreationStateMachine
       definition:
         Comment: "The policy creation flow"
         StartAt: DoUnderwriting
@@ -39,7 +89,8 @@ stepFunctions:
           WritePolicyToDataStore:
             Type: Task
             Resource: "arn:aws:lambda:${opt:region, self:provider.region}:#{AWS::AccountId}:function:${self:service}-${opt:stage}-WritePolicyToDataStoreHandler"  
-            End: true
+            End: true 
+
 plugins:
   - serverless-step-functions
   - serverless-pseudo-parameters
