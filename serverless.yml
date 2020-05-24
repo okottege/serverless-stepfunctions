@@ -1,5 +1,9 @@
 service: policy-creator
 
+custom:
+  policyTableName: ${self:service}-${opt:stage, self:provider.stage}
+  createPolicyStepFunctionARN: ${self:resources.Outputs.PolicyCreationStateMachine.Value}
+
 provider:
   name: aws
   runtime: dotnetcore3.1
@@ -14,15 +18,15 @@ provider:
         - dynamodb:Query
         - dynamodb:Scan
         - dynamodb:PutItem
-      Resource: "arn:aws:dynamodb:${opt:region, self:provider.region}:*:table/${self:provider.environment.POLICY_TABLE_NAME}"
+      Resource: "arn:aws:dynamodb:${opt:region, self:provider.region}:*:table/${self:custom.policyTableName}"
     
     - Effect: Allow
       Action:
         - states:StartExecution
-      Resource: ${self:resources.Outputs.PolicyCreationStateMachine.Value}
+      Resource: ${self:custom.createPolicyStepFunctionARN}
   environment:
-    POLICY_TABLE_NAME: ${self:service}-${opt:stage, self:provider.stage}
-    STEP_FUNCTION_ARN: ${self:resources.Outputs.PolicyCreationStateMachine.Value}
+    POLICY_TABLE_NAME: ${self:custom.policyTableName}
+    STEP_FUNCTION_ARN: ${self:custom.createPolicyStepFunctionARN}
 
 package:
   artifact: dist/policy-creator.zip
@@ -53,7 +57,7 @@ resources:
       Type: AWS::DynamoDB::Table
       DeletionPolicy: Retain
       Properties:
-        TableName: ${self:provider.environment.POLICY_TABLE_NAME}
+        TableName: ${self:custom.policyTableName}
         AttributeDefinitions:
           - AttributeName: PolicyNumber
             AttributeType: S
