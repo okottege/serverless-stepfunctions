@@ -1,17 +1,28 @@
-PolicyCreationProcess:
-  definition:
-    Comment: "The policy creation flow"
-    StartAt: DoUnderwriting
-    States:
-      DoUnderwriting:
-        Type: Task
-        Resource: "arn:aws:lambda:${opt:region, self:provider.region}:#{AWS::AccountId}:function:${self:service}-${opt:stage}-UnderwriteHandler"
-        Next: "CreatePolicy"
-      CreatePolicy:
-        Type: Task
-        Resource: "arn:aws:lambda:${opt:region, self:provider.region}:#{AWS::AccountId}:function:${self:service}-${opt:stage}-CreatePolicyHandler"
-        Next: "WritePolicyToDataStore"
-      WritePolicyToDataStore:
-        Type: Task
-        Resource: "arn:aws:lambda:${opt:region, self:provider.region}:#{AWS::AccountId}:function:${self:service}-${opt:stage}-WritePolicyToDataStoreHandler"  
-        End: true
+stateMachines:
+  PolicyCreationProcess:
+    events:
+      - eventBridge:
+          eventBus: 'custom-sales-events'
+          event: 
+            source: 
+              - 'Join'
+            detail-type:
+              - 'Start Policy Creation'
+
+    name: PolicyCreationStateMachine
+    definition:
+      Comment: "The policy creation flow"
+      StartAt: DoUnderwriting
+      States:
+        DoUnderwriting:
+          Type: Task
+          Resource: "arn:aws:lambda:${opt:region, self:provider.region}:#{AWS::AccountId}:function:${self:service}-${opt:stage}-UnderwriteHandler"
+          Next: "CreatePolicy"
+        CreatePolicy:
+          Type: Task
+          Resource: "arn:aws:lambda:${opt:region, self:provider.region}:#{AWS::AccountId}:function:${self:service}-${opt:stage}-CreatePolicyHandler"
+          Next: "WritePolicyToDataStore"
+        WritePolicyToDataStore:
+          Type: Task
+          Resource: "arn:aws:lambda:${opt:region, self:provider.region}:#{AWS::AccountId}:function:${self:service}-${opt:stage}-WritePolicyToDataStoreHandler"  
+          End: true

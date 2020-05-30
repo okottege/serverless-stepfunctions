@@ -8,8 +8,9 @@
     <PackageReference Include="Amazon.Lambda.Core" Version="1.1.0" />
     <PackageReference Include="Amazon.Lambda.Serialization.SystemTextJson" Version="2.0.1" />
     <PackageReference Include="Amazon.Lambda.APIGatewayEvents" Version="2.1.0" />
-    <PackageReference Include="AWSSDK.DynamoDBv2" Version="3.3.106.8" />
-    <PackageReference Include="AWSSDK.StepFunctions" Version="3.3.104.49" />
+    <PackageReference Include="AWSSDK.DynamoDBv2" Version="3.3.106.11" />
+    <PackageReference Include="AWSSDK.EventBridge" Version="3.3.101.52" />
+    <PackageReference Include="AWSSDK.StepFunctions" Version="3.3.104.51" />
     <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
   </ItemGroup>
   <ItemGroup>
