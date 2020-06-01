@@ -25,6 +25,13 @@ provider:
       Action:
         - states:StartExecution
       Resource: ${self:custom.createPolicyStepFunctionARN}
+    
+    - Effect: Allow
+      Action:
+        - events:PutEvents
+      Resource:
+        Fn::GetAtt: [salesEventBus, Arn]
+
   environment:
     POLICY_TABLE_NAME: ${self:custom.policyTableName}
     STEP_FUNCTION_ARN: ${self:custom.createPolicyStepFunctionARN}

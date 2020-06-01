@@ -8,6 +8,7 @@ stateMachines:
               - 'Join'
             detail-type:
               - 'Start Policy Creation'
+          inputPath: '$.detail'
 
     name: PolicyCreationStateMachine
     definition:
