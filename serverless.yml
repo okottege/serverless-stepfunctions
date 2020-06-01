@@ -3,6 +3,7 @@ service: policy-creator
 custom:
   policyTableName: ${self:service}-${opt:stage, self:provider.stage}
   createPolicyStepFunctionARN: ${self:resources.Outputs.PolicyCreationStateMachine.Value}
+  salesEventBusName: 'sales-eventbus'
 
 provider:
   name: aws
@@ -27,6 +28,7 @@ provider:
   environment:
     POLICY_TABLE_NAME: ${self:custom.policyTableName}
     STEP_FUNCTION_ARN: ${self:custom.createPolicyStepFunctionARN}
+    SALES_EVENTBUS_NAME: ${self:custom.salesEventBusName}
 
 package:
   artifact: dist/policy-creator.zip
@@ -67,6 +69,11 @@ resources:
         ProvisionedThroughput:
           ReadCapacityUnits: 1
           WriteCapacityUnits: 1
+          
+    salesEventBus:
+      Type: AWS::Events::EventBus
+      Properties:
+        Name: ${self:custom.salesEventBusName}
 
   Outputs:
     PolicyCreationStateMachine:

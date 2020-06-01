@@ -2,7 +2,7 @@ stateMachines:
   PolicyCreationProcess:
     events:
       - eventBridge:
-          eventBus: 'custom-sales-events'
+          eventBusName: ${self:custom.salesEventBusName}
           event: 
             source: 
               - 'Join'
