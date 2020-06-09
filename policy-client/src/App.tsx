@@ -1,12 +1,23 @@
 import React from 'react';
+import {
+  BrowserRouter as Router,
+  Route,
+  Switch
+} from 'react-router-dom';
 import './App.css';
-import NotesList from "./components/NotesList";
+import Login from './components/auth/Login';
+import NotesList from './components/NotesList';
+import NotFound from './components/NotFound';
 
 function App() {
   return (
-    <div className="App">
-      <NotesList />
-    </div>
+    <Router>
+      <Switch>
+        <Route exact path="/" component={Login} />
+        <Route exact path="/notes" component={NotesList} />
+        <Route component={NotFound} />
+      </Switch>
+    </Router>
   );
 }
 

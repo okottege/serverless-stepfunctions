@@ -1,32 +1,37 @@
-import React, {useState} from 'react';
+import React from 'react';
+import useNoteListService from "../services/NoteListService";
+import {NoteListState} from "../types/NoteListState";
+import {Note} from "../types/Note";
 
-type Note = {
-  id: string,
-  title: string,
-  detail: string
-}
+const noteListUrl = 'https://api.noteapp.info/v1/notes';
 
 function renderNote(note: Note): JSX.Element {
   return (
     <React.Fragment>
       <h3>{note.title}</h3>
-      <p>{note.detail}</p>
+      <p>{note.content}</p>
     </React.Fragment>
   )
 }
 
-function renderNoteList(noteList: Note[]) {
-  return noteList?.length === 0
-    ? <p>There are no notes to display.</p>
-    : noteList.map(renderNote);
+function renderNoteList(noteListState: NoteListState<Note>) {
+  switch (noteListState.status) {
+    case "loading": return <p>Loading...</p>
+    case "loaded":
+      return noteListState?.notes?.length === 0
+        ? <p>There are no notes to display.</p>
+        : noteListState.notes.map(renderNote);
+    case "error": return <p>There was an error loading the notes.</p>
+  }
 }
 
 export default function NotesList() {
-  const [notes] = useState<Note[]>([]);
+  const notes = useNoteListService(noteListUrl);
+
   return(
-    <React.Fragment>
+    <div>
       <h1>The Notes List</h1>
       {renderNoteList(notes)}
-    </React.Fragment>
+    </div>
   )
 }
