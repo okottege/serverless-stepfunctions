@@ -1,4 +1,5 @@
 import React from 'react';
+import {Card, Alert} from 'react-bootstrap';
 import useNoteListService from "../services/NoteListService";
 import {NoteListState} from "../types/NoteListState";
 import {Note} from "../types/Note";
@@ -21,7 +22,7 @@ function renderNoteList(noteListState: NoteListState<Note>) {
       return noteListState?.notes?.length === 0
         ? <p>There are no notes to display.</p>
         : noteListState.notes.map(renderNote);
-    case "error": return <p>There was an error loading the notes.</p>
+    case "error": return <Alert variant="danger">There was an error loading the notes.</Alert>
   }
 }
 
@@ -29,9 +30,11 @@ export default function NotesList() {
   const notes = useNoteListService(noteListUrl);
 
   return(
-    <div>
-      <h1>The Notes List</h1>
-      {renderNoteList(notes)}
-    </div>
+    <Card>
+      <Card.Body>
+        <h1>The Notes List</h1>
+        {renderNoteList(notes)}
+      </Card.Body>
+    </Card>
   )
 }
